@@ -1,6 +1,6 @@
 #ifndef MEZORY_STL_VECTOR_H
 #define MEZORY_STL_VECTOR_H
- 
+
 namespace mezstd {
 	template <typename vector>
 	class RandomAccessIterator {
@@ -95,7 +95,7 @@ namespace mezstd {
 		using PointerType = ValueType*;
 		using ReferenceType = ValueType&;
 		using ConstReferenceType = const ValueType&;
-		using SizeType = std::size_t;
+		using size_type = unsigned int;
 
 		using Iterator = RandomAccessIterator<vector<ValueType>>;
 	public:
@@ -107,44 +107,71 @@ namespace mezstd {
 		* @brief access specified element with bounds checking
 		* @return Reference to the requested element.
 		*/
-		ReferenceType at(const std::size_t pos) { return data_[pos]; }
-		ConstReferenceType at(const std::size_t pos) const { return data_[pos]; }
+		ReferenceType at(const size_type pos) { return data_[pos]; }
+		ConstReferenceType at(const size_type pos) const { return data_[pos]; }
+
 		/**
 		* @brief access the first element
 		* @return reference to the first element
 		*/
-		ReferenceType front();
-		ConstReferenceType front() const;
+		ReferenceType front() {
+			return *data_;
+		}
+		ConstReferenceType front() const {
+			return *data_;
+		}
+
 		/**
 		* @brief access the last element
 		* @return Reference to the last element.
 		*/
-		ReferenceType back();
-		ConstReferenceType back() const;
+		ReferenceType back() {
+			return *(data_ + size_ - 1);
+		}
+
+		ConstReferenceType back() const {
+			return *(data_ + size_ - 1);
+		}
 
 		/**
 		* @brief Checks if the container has no elements
 		* @return true if the container is empty, false otherwise
 		*/
-		bool empty() const noexcept;
+		bool empty() const noexcept {
+			return (data_ == (data_ + size_));
+		}
+
 		/**
 		* @brief Returns the number of elements in the container
 		* @return The number of elements in the container.
 		*/
-		SizeType size() const noexcept { return size_; }
+		size_type size() const noexcept { 
+			return size_; 
+		}
+
 		/**
 		* @brief reserves storage
 		*/
-		void reserve(SizeType new_capacity);
+		void reserve(size_type new_capacity) {
+			reallocate(new_capacity);
+		}
+
 		/**
 		* @brief Returns the number of elements that the container has currently allocated space for.
 		* @return Capacity of the currently allocated storage.
 		*/
-		SizeType capacity() const noexcept;
+		size_type capacity() const noexcept;
+
 		/**
 		* @brief clears elements
 		*/
-		void clear() noexcept;
+		void clear() noexcept {
+			for (PointerType it = data_; it != data_ + size_; ++it)
+				it->~ValueType();
+			
+			size_ = 0;
+		}
+
 		/**
 		* @brief adds element to the end
 		*/
@@ -167,28 +194,28 @@ namespace mezstd {
 			return Iterator(data_ + size_);
 		}
 
-		ReferenceType operator[](const SizeType index)  {
+		ReferenceType operator[](const size_type index)  {
 			return data_[index];
 		}
 
 	private:
 		PointerType data_;
-		SizeType size_;
-		SizeType capacity_ = 2;
+		size_type size_;
+		size_type capacity_ = 2;
 	private:
-		void reallocate(std::size_t capacity) {
-			std::size_t bytes = size_ + capacity;
+		void reallocate(size_type capacity) {
+			size_type bytes = size_ + capacity;
 			capacity_ = bytes;
 
-			_Type* tmp = new _Type[size_];
-			for (int i = 0; i < size_; i++) {
+			PointerType tmp = new ValueType[size_];
+			for (size_type i = 0; i < size_; i++) {
 				tmp[i] = data_[i];
 			}
 	 
 			delete[] data_;
 
-			data_ = new _Type[bytes];
-			for (int i = 0; i < size_; i++) {
+			data_ = new ValueType[bytes];
+			for (size_type i = 0; i < size_; i++) {
 				data_[i] = tmp[i];
 			}
 			 
@@ -203,6 +230,7 @@ namespace mezstd {
 	template<typename _Type>
 	inline vector<_Type>::~vector()
 	{
+		size_ = 0;
 		delete[] data_;
 	}
 
