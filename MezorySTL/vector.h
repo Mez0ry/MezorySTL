@@ -2,6 +2,92 @@
 #define MEZORY_STL_VECTOR_H
  
 namespace mezstd {
+	template <typename vector>
+	class RandomAccessIterator {
+	public:
+		using ValueType = typename vector::ValueType;
+		using PointerType = ValueType*;
+		using ReferenceType = ValueType&;
+	public:
+		RandomAccessIterator(PointerType ptr) : ptr_(ptr){}
+		RandomAccessIterator(const RandomAccessIterator& rhs) : ptr_(rhs.ptr_) { }
+		~RandomAccessIterator() = default;
+
+		inline ReferenceType operator*() const { return *ptr_; }
+		inline PointerType operator->() const { return ptr_; }
+
+		inline RandomAccessIterator& operator=(const RandomAccessIterator& rhs) {
+			ptr_ = rhs.ptr_; 
+			return *this; 
+		}
+		inline RandomAccessIterator& operator++()  {
+			++ptr_;
+			return *this;
+		}
+
+		inline const RandomAccessIterator& operator++() const {
+			++ptr_;
+			return *this;
+		}
+		
+		inline RandomAccessIterator& operator--() {
+			--ptr_;
+			return *this;
+		}
+
+		 RandomAccessIterator operator++(int) const {
+			RandomAccessIterator tmp(*this);
+			++(*this);
+			return tmp;
+		}
+
+		 RandomAccessIterator operator++(int) {
+			 RandomAccessIterator tmp(*this);
+			 ++(*this);
+			 return tmp;
+		 }
+
+		inline RandomAccessIterator operator--(int) {
+			RandomAccessIterator tmp(*this);
+			--(*this);
+			return tmp;
+		}
+
+		inline 	bool operator!=(const RandomAccessIterator& rhs) const {
+			return(this->ptr_ != rhs.ptr_);
+		}
+
+		inline bool operator==(const RandomAccessIterator& rhs) const {
+			return(this->ptr_ == rhs.ptr_);
+		}
+
+		inline 	bool operator>(const RandomAccessIterator& rhs) const {
+			return(this->ptr_ > rhs.ptr_);
+		}
+
+		inline 	bool operator<(const RandomAccessIterator& rhs) const {
+			return(this->ptr_ < rhs.ptr_);
+		}
+
+		inline 	bool operator>=(const RandomAccessIterator& rhs) const {
+			return(this->ptr_ >= rhs.ptr_);
+		}
+
+		inline bool operator<=(const RandomAccessIterator& rhs) const {
+			return(this->ptr_ <= rhs.ptr_);
+		}
+
+		friend inline RandomAccessIterator operator+(const RandomAccessIterator& rhs) { 
+			return RandomAccessIterator(ptr_ + rhs.ptr_);
+		}
+		friend inline RandomAccessIterator operator-(const RandomAccessIterator& rhs) {
+			return RandomAccessIterator(ptr_ - rhs.ptr_);
+		}
+
+	private:
+		mutable PointerType ptr_;
+	};
+
 	template<typename _Type>
 	class vector {
 	public:
@@ -10,6 +96,8 @@ namespace mezstd {
 		using ReferenceType = ValueType&;
 		using ConstReferenceType = const ValueType&;
 		using SizeType = std::size_t;
+
+		using Iterator = RandomAccessIterator<vector<ValueType>>;
 	public:
 		vector();
 		~vector();
@@ -62,6 +150,22 @@ namespace mezstd {
 		*/
 		void push_back(ConstReferenceType value);
 		void push_back(_Type&& value);
+
+		Iterator begin() {
+			return Iterator(data_);
+		}
+
+		Iterator end() {
+			return Iterator(data_ + size_);
+		}
+
+		Iterator cbegin() const {
+			return Iterator(data_);
+		}
+
+		Iterator cend() const {
+			return Iterator(data_ + size_);
+		}
 
 		ReferenceType operator[](const SizeType index)  {
 			return data_[index];
