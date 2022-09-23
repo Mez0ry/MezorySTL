@@ -1,25 +1,43 @@
 #ifndef MEZORY_STL_VECTOR_H
 #define MEZORY_STL_VECTOR_H
-
+#include <iterator>
 namespace mezstd {
 	template <typename vector>
-	class RandomAccessIterator {
+	class RandomAccessIterator : public std::iterator<std::random_access_iterator_tag, vector> {
 	public:
-		using ValueType = typename vector::ValueType;
-		using PointerType = ValueType*;
-		using ReferenceType = ValueType&;
+		using ValueType		   = typename vector::ValueType;
+		using PointerType      = ValueType*;
+		using ReferenceType    = ValueType&;
+		using difference_type  = typename std::iterator<std::random_access_iterator_tag, vector>::difference_type;
+		using IteratorCategory = std::random_access_iterator_tag;
 	public:
+		RandomAccessIterator() : ptr_(nullptr){}
 		RandomAccessIterator(PointerType ptr) : ptr_(ptr){}
 		RandomAccessIterator(const RandomAccessIterator& rhs) : ptr_(rhs.ptr_) { }
 		~RandomAccessIterator() = default;
 
+		inline RandomAccessIterator& operator+=(difference_type rhs) {
+			ptr_ += rhs; 
+			return *this;
+		}
+
+		inline RandomAccessIterator& operator-=(difference_type rhs) {
+			ptr_ -= rhs;
+			return *this;
+		}
+
 		inline ReferenceType operator*() const { return *ptr_; }
 		inline PointerType operator->() const { return ptr_; }
+		inline ReferenceType operator[](difference_type rhs) const {
+			return ptr_[rhs];
+		}
+
 
 		inline RandomAccessIterator& operator=(const RandomAccessIterator& rhs) {
 			ptr_ = rhs.ptr_; 
 			return *this; 
 		}
+
 		inline RandomAccessIterator& operator++()  {
 			++ptr_;
 			return *this;
@@ -77,6 +95,10 @@ namespace mezstd {
 			return(this->ptr_ <= rhs.ptr_);
 		}
 
+		inline difference_type operator-(const RandomAccessIterator& rhs) const { return ptr_ - rhs.ptr_; }
+		inline RandomAccessIterator operator+(difference_type rhs) const { return RandomAccessIterator(ptr_ + rhs); }
+		inline RandomAccessIterator operator-(difference_type rhs) const { return RandomAccessIterator(ptr_ - rhs); }
+
 		friend inline RandomAccessIterator operator+(const RandomAccessIterator& rhs) { 
 			return RandomAccessIterator(ptr_ + rhs.ptr_);
 		}
@@ -84,6 +106,7 @@ namespace mezstd {
 			return RandomAccessIterator(ptr_ - rhs.ptr_);
 		}
 
+		 
 	private:
 		mutable PointerType ptr_;
 	};
@@ -196,6 +219,16 @@ namespace mezstd {
 
 		ReferenceType operator[](const size_type index)  {
 			return data_[index];
+		}
+		/**
+		* @brief Two vectors are equal if they have the same number of elements and their respective elements have the same values. Otherwise, they are unequal.
+		*/
+		friend inline bool operator ==(const vector<ValueType>& left, const vector<ValueType>& right)
+		{
+			if (left.size() != right.size()) 
+				return false;
+
+			return (std::equal(left.cbegin(), left.cend(), right.cbegin()));
 		}
 
 	private:
